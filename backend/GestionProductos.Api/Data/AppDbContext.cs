@@ -12,6 +12,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProductType> ProductTypes => Set<ProductType>();
     public DbSet<Product> Products => Set<Product>();
 
+    // Las fechas se guardan en UTC. SQL Server no guarda esa marca, así que se la pone al leerlas:
+    // sin ella, el JSON sale sin la «Z» y el navegador la tomaría como hora local.
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Role>(entity =>
