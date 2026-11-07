@@ -4,6 +4,7 @@ using GestionProductos.Api.Dtos.Auth;
 using GestionProductos.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -19,8 +20,10 @@ public class AuthController(AppDbContext context, IPasswordHasher passwordHasher
     private const string DummyHash = "$2a$11$PBa0PCjF3Alr85gRR646lOCihKGh7dCx44f9H6x4WzzOlM//48QEy";
 
     [HttpPost("login")]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();

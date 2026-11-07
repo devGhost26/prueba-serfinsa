@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using GestionProductos.Api.Data;
+using GestionProductos.Api.Errors;
 using GestionProductos.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -42,17 +44,59 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     });
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+// Todo error sale en formato ProblemDetails (RFC 9457) y con el título en español.
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsTitles.Apply);
+
+// Solo el frontend puede llamar a la API desde el navegador. Los orígenes salen de appsettings.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .WithExposedHeaders("Location")));
+
+// Máximo 5 intentos de inicio de sesión por minuto desde la misma IP, contra la fuerza bruta.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(RateLimitPolicies.Login, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+});
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+builder.Services.AddControllers()
+    // Un JSON mal formado no devuelve el mensaje interno del lector, que nombra clases del backend.
+    .AddJsonOptions(options => options.AllowInputFormatterExceptionMessages = false)
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        var validationResponse = options.InvalidModelStateResponseFactory;
+        options.InvalidModelStateResponseFactory = context =>
+            InvalidJsonResponse.IsInvalidJson(context.ModelState)
+                ? InvalidJsonResponse.Create(context.HttpContext)
+                : validationResponse(context);
+    });
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+else
+{
+    // En producción todo va por HTTPS. En desarrollo no se redirige: el frontend llama por http
+    // y el navegador bloquea la consulta previa de CORS si recibe una redirección.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+app.UseCors();
+app.UseRateLimiter();
 
 // Primero se identifica al usuario con su token y después se revisan sus permisos.
 app.UseAuthentication();
