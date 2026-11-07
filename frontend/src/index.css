@@ -128,6 +128,37 @@ h1 {
   background: var(--color-bg);
 }
 
+.button-danger {
+  color: #fff;
+  background: var(--color-danger);
+}
+
+.button-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.button-danger-outline {
+  color: var(--color-danger);
+  background: var(--color-surface);
+  border-color: #fecaca;
+}
+
+.button-danger-outline:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+}
+
+.button-small {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Los enlaces con aspecto de botón. */
+a.button {
+  display: inline-block;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 /* ---------- Login ---------- */
 
 .login-page {
@@ -181,10 +212,205 @@ h1 {
   border-radius: 999px;
 }
 
+/* El contenido ocupa todo el ancho de la pantalla. */
 .content {
-  max-width: 1100px;
-  margin: 0 auto;
   padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-header .muted {
+  margin: 0;
+}
+
+.toolbar {
+  margin-bottom: 0.75rem;
+}
+
+.search {
+  font: inherit;
+  width: 100%;
+  max-width: 360px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.alert-success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-dismissible {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.alert-close {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.alert-close:hover {
+  opacity: 1;
+}
+
+/* ---------- Tabla ---------- */
+
+.table-wrapper {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.table th,
+.table td {
+  padding: 0.625rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.table th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  background: #f9fafb;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.table .number {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.product-name {
+  font-weight: 600;
+}
+
+.product-description {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.actions-column {
+  width: 1%;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.badge-warning {
+  margin: 0;
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.empty {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.empty .button {
+  margin-top: 0.75rem;
+}
+
+/* ---------- Formulario de producto ---------- */
+
+.form-page h1 {
+  margin-bottom: 0.25rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 1rem;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.field-hint {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ---------- Ventana de confirmación ---------- */
+
+.dialog {
+  width: min(420px, calc(100% - 2rem));
+  padding: 1.5rem;
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.2);
+}
+
+.dialog::backdrop {
+  background: rgb(17 24 39 / 0.5);
+}
+
+.dialog h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.dialog p {
+  margin: 0 0 1.25rem;
+  color: var(--color-muted);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 @media (max-width: 600px) {

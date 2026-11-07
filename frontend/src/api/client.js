@@ -17,7 +17,8 @@ export class ApiError extends Error {
 }
 
 // Hace una petición a la API. Agrega el token si hay sesión y devuelve el JSON de la respuesta.
-export async function apiFetch(path, { method = 'GET', body } = {}) {
+// Con `signal` la petición se puede cancelar, por ejemplo si se sale de la página antes de que responda.
+export async function apiFetch(path, { method = 'GET', body, signal } = {}) {
   const token = getToken()
   const headers = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -29,8 +30,10 @@ export async function apiFetch(path, { method = 'GET', body } = {}) {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
     })
-  } catch {
+  } catch (error) {
+    if (error.name === 'AbortError') throw error
     throw new ApiError(0, { detail: 'No se pudo conectar con el servidor. Revisa tu conexión.' })
   }
 
