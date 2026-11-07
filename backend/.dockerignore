@@ -1,0 +1,6 @@
+**/bin/
+**/obj/
+GestionProductos.Tests/
+
+# La clave de desarrollo no entra en la imagen: en Docker la clave llega por variable de entorno.
+**/appsettings.Development.json

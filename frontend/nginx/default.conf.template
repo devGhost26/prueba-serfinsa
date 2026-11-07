@@ -1,0 +1,30 @@
+# Al arrancar, la imagen de nginx reemplaza ${API_ORIGIN} por la variable de entorno.
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    server_tokens off;
+
+    # Cabeceras de seguridad. La CSP solo deja cargar código de este mismo sitio y llamar a la API:
+    # si alguien lograra inyectar un script, el navegador no lo ejecutaría ni podría enviar el token afuera.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    # Los archivos compilados llevan un hash en el nombre: se pueden guardar en caché por un año.
+    location /assets/ {
+        expires 1y;
+    }
+
+    # index.html nunca se guarda en caché, para que siempre cargue la versión más nueva.
+    location = /index.html {
+        expires -1;
+    }
+
+    # Aplicación de una sola página: cualquier ruta (/productos, /login...) la resuelve React.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

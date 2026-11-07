@@ -55,13 +55,14 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .AllowAnyMethod()
     .WithExposedHeaders("Location")));
 
-// Máximo 5 intentos de inicio de sesión por minuto desde la misma IP, contra la fuerza bruta.
+// Intentos de inicio de sesión por minuto desde la misma IP (5 por defecto), contra la fuerza bruta.
+var loginPermitLimit = builder.Configuration.GetValue("RateLimiting:LoginPermitLimit", 5);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddPolicy(RateLimitPolicies.Login, context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
-        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = loginPermitLimit, Window = TimeSpan.FromMinutes(1) }));
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -87,10 +88,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-else
+
+// En producción todo va por HTTPS. En desarrollo no se redirige: el frontend llama por http
+// y el navegador bloquea la consulta previa de CORS si recibe una redirección. En Docker se
+// apaga con Https__Redirect=false, porque ahí el HTTPS lo pondría un proxy delante.
+if (!app.Environment.IsDevelopment() && app.Configuration.GetValue("Https:Redirect", true))
 {
-    // En producción todo va por HTTPS. En desarrollo no se redirige: el frontend llama por http
-    // y el navegador bloquea la consulta previa de CORS si recibe una redirección.
     app.UseHsts();
     app.UseHttpsRedirection();
 }
@@ -105,3 +108,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Permite que las pruebas de integración levanten la API con WebApplicationFactory.
+public partial class Program;
